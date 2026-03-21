@@ -7,7 +7,7 @@ package db
 import (
 	"context"
 
-	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type Querier interface {
@@ -16,24 +16,24 @@ type Querier interface {
 	CreateOrganization(ctx context.Context, arg CreateOrganizationParams) (CreateOrganizationRow, error)
 	CreateProject(ctx context.Context, arg CreateProjectParams) (CreateProjectRow, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (CreateUserRow, error)
-	DeleteOrganization(ctx context.Context, id uuid.UUID) error
-	DeleteProject(ctx context.Context, id uuid.UUID) error
-	DeleteUser(ctx context.Context, id uuid.UUID) error
+	DeleteOrganization(ctx context.Context, id pgtype.UUID) error
+	DeleteProject(ctx context.Context, id pgtype.UUID) error
+	DeleteUser(ctx context.Context, id pgtype.UUID) error
 	DeleteUserFromOrganization(ctx context.Context, arg DeleteUserFromOrganizationParams) error
 	DeleteUserFromProject(ctx context.Context, arg DeleteUserFromProjectParams) error
-	GetAllOrganizationsByUser(ctx context.Context, userID uuid.UUID) ([]GetAllOrganizationsByUserRow, error)
-	GetAllUsersInOrganization(ctx context.Context, organizationID uuid.UUID) ([]GetAllUsersInOrganizationRow, error)
-	GetAllUsersInProject(ctx context.Context, projectID uuid.UUID) ([]GetAllUsersInProjectRow, error)
+	GetAllOrganizationsByUser(ctx context.Context, userID pgtype.UUID) ([]GetAllOrganizationsByUserRow, error)
+	GetAllUsersInOrganization(ctx context.Context, organizationID pgtype.UUID) ([]GetAllUsersInOrganizationRow, error)
+	GetAllUsersInProject(ctx context.Context, projectID pgtype.UUID) ([]GetAllUsersInProjectRow, error)
 	GetOrganizationByEmail(ctx context.Context, email string) (GetOrganizationByEmailRow, error)
-	GetOrganizationByID(ctx context.Context, id uuid.UUID) (GetOrganizationByIDRow, error)
-	GetOrganizationOwner(ctx context.Context, id uuid.UUID) (GetOrganizationOwnerRow, error)
-	GetProjectByID(ctx context.Context, id uuid.UUID) (GetProjectByIDRow, error)
+	GetOrganizationByID(ctx context.Context, id pgtype.UUID) (GetOrganizationByIDRow, error)
+	GetOrganizationOwner(ctx context.Context, id pgtype.UUID) (GetOrganizationOwnerRow, error)
+	GetProjectByID(ctx context.Context, id pgtype.UUID) (GetProjectByIDRow, error)
 	GetProjectByName(ctx context.Context, arg GetProjectByNameParams) (GetProjectByNameRow, error)
-	GetProjectOwner(ctx context.Context, id uuid.UUID) (GetProjectOwnerRow, error)
-	GetProjectsByOrganization(ctx context.Context, organizationID uuid.UUID) ([]GetProjectsByOrganizationRow, error)
-	GetProjectsByUser(ctx context.Context, userID uuid.UUID) ([]GetProjectsByUserRow, error)
+	GetProjectOwner(ctx context.Context, id pgtype.UUID) (GetProjectOwnerRow, error)
+	GetProjectsByOrganization(ctx context.Context, organizationID pgtype.UUID) ([]GetProjectsByOrganizationRow, error)
+	GetProjectsByUser(ctx context.Context, userID pgtype.UUID) ([]GetProjectsByUserRow, error)
 	GetUserByEmail(ctx context.Context, email string) (GetUserByEmailRow, error)
-	GetUserByID(ctx context.Context, id uuid.UUID) (GetUserByIDRow, error)
+	GetUserByID(ctx context.Context, id pgtype.UUID) (GetUserByIDRow, error)
 	GetUserRoleInProject(ctx context.Context, arg GetUserRoleInProjectParams) (interface{}, error)
 	UpdateOrganization(ctx context.Context, arg UpdateOrganizationParams) (UpdateOrganizationRow, error)
 	UpdateProject(ctx context.Context, arg UpdateProjectParams) (UpdateProjectRow, error)

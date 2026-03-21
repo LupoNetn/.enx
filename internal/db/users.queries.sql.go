@@ -7,10 +7,8 @@ package db
 
 import (
 	"context"
-	"database/sql"
-	"time"
 
-	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const createUser = `-- name: CreateUser :one
@@ -24,14 +22,14 @@ type CreateUserParams struct {
 }
 
 type CreateUserRow struct {
-	ID        uuid.UUID `json:"id"`
-	Email     string    `json:"email"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
+	ID        pgtype.UUID        `json:"id"`
+	Email     string             `json:"email"`
+	CreatedAt pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt pgtype.Timestamptz `json:"updated_at"`
 }
 
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (CreateUserRow, error) {
-	row := q.queryRow(ctx, q.createUserStmt, createUser, arg.Email, arg.Name, arg.Password)
+	row := q.db.QueryRow(ctx, createUser, arg.Email, arg.Name, arg.Password)
 	var i CreateUserRow
 	err := row.Scan(
 		&i.ID,
@@ -46,8 +44,8 @@ const deleteUser = `-- name: DeleteUser :exec
 DELETE FROM users WHERE id = $1
 `
 
-func (q *Queries) DeleteUser(ctx context.Context, id uuid.UUID) error {
-	_, err := q.exec(ctx, q.deleteUserStmt, deleteUser, id)
+func (q *Queries) DeleteUser(ctx context.Context, id pgtype.UUID) error {
+	_, err := q.db.Exec(ctx, deleteUser, id)
 	return err
 }
 
@@ -57,15 +55,15 @@ WHERE email = $1
 `
 
 type GetUserByEmailRow struct {
-	ID        uuid.UUID `json:"id"`
-	Email     string    `json:"email"`
-	Name      string    `json:"name"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
+	ID        pgtype.UUID        `json:"id"`
+	Email     string             `json:"email"`
+	Name      string             `json:"name"`
+	CreatedAt pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt pgtype.Timestamptz `json:"updated_at"`
 }
 
 func (q *Queries) GetUserByEmail(ctx context.Context, email string) (GetUserByEmailRow, error) {
-	row := q.queryRow(ctx, q.getUserByEmailStmt, getUserByEmail, email)
+	row := q.db.QueryRow(ctx, getUserByEmail, email)
 	var i GetUserByEmailRow
 	err := row.Scan(
 		&i.ID,
@@ -83,15 +81,15 @@ WHERE id = $1
 `
 
 type GetUserByIDRow struct {
-	ID        uuid.UUID `json:"id"`
-	Email     string    `json:"email"`
-	Name      string    `json:"name"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
+	ID        pgtype.UUID        `json:"id"`
+	Email     string             `json:"email"`
+	Name      string             `json:"name"`
+	CreatedAt pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt pgtype.Timestamptz `json:"updated_at"`
 }
 
-func (q *Queries) GetUserByID(ctx context.Context, id uuid.UUID) (GetUserByIDRow, error) {
-	row := q.queryRow(ctx, q.getUserByIDStmt, getUserByID, id)
+func (q *Queries) GetUserByID(ctx context.Context, id pgtype.UUID) (GetUserByIDRow, error) {
+	row := q.db.QueryRow(ctx, getUserByID, id)
 	var i GetUserByIDRow
 	err := row.Scan(
 		&i.ID,
@@ -115,22 +113,22 @@ RETURNING id, email, name, created_at, updated_at
 `
 
 type UpdateUserParams struct {
-	Email    sql.NullString `json:"email"`
-	Name     sql.NullString `json:"name"`
-	Password sql.NullString `json:"password"`
-	ID       uuid.UUID      `json:"id"`
+	Email    pgtype.Text `json:"email"`
+	Name     pgtype.Text `json:"name"`
+	Password pgtype.Text `json:"password"`
+	ID       pgtype.UUID `json:"id"`
 }
 
 type UpdateUserRow struct {
-	ID        uuid.UUID `json:"id"`
-	Email     string    `json:"email"`
-	Name      string    `json:"name"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
+	ID        pgtype.UUID        `json:"id"`
+	Email     string             `json:"email"`
+	Name      string             `json:"name"`
+	CreatedAt pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt pgtype.Timestamptz `json:"updated_at"`
 }
 
 func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (UpdateUserRow, error) {
-	row := q.queryRow(ctx, q.updateUserStmt, updateUser,
+	row := q.db.QueryRow(ctx, updateUser,
 		arg.Email,
 		arg.Name,
 		arg.Password,

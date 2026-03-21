@@ -49,6 +49,10 @@ func main() {
 		return
 	}
 
+
+   // later use this to setup queries and all.
+	_ = db.New(dbPool)
+
 	slog.Info("starting the server", "port", cfg.Port)
 
 	if err := StartServer(router, cfg.Port); err != nil {

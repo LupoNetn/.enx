@@ -7,9 +7,8 @@ package db
 
 import (
 	"context"
-	"database/sql"
 
-	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const addUserToOrganization = `-- name: AddUserToOrganization :one
@@ -19,13 +18,13 @@ RETURNING user_id, organization_id, role, created_at, updated_at
 `
 
 type AddUserToOrganizationParams struct {
-	UserID         uuid.UUID `json:"user_id"`
-	OrganizationID uuid.UUID `json:"organization_id"`
-	Role           Role      `json:"role"`
+	UserID         pgtype.UUID `json:"user_id"`
+	OrganizationID pgtype.UUID `json:"organization_id"`
+	Role           Role        `json:"role"`
 }
 
 func (q *Queries) AddUserToOrganization(ctx context.Context, arg AddUserToOrganizationParams) (OrganizationMembers, error) {
-	row := q.queryRow(ctx, q.addUserToOrganizationStmt, addUserToOrganization, arg.UserID, arg.OrganizationID, arg.Role)
+	row := q.db.QueryRow(ctx, addUserToOrganization, arg.UserID, arg.OrganizationID, arg.Role)
 	var i OrganizationMembers
 	err := row.Scan(
 		&i.UserID,
@@ -44,20 +43,20 @@ RETURNING id,name,email
 `
 
 type CreateOrganizationParams struct {
-	Name      string    `json:"name"`
-	Email     string    `json:"email"`
-	Passkey   string    `json:"passkey"`
-	CreatedBy uuid.UUID `json:"created_by"`
+	Name      string      `json:"name"`
+	Email     string      `json:"email"`
+	Passkey   string      `json:"passkey"`
+	CreatedBy pgtype.UUID `json:"created_by"`
 }
 
 type CreateOrganizationRow struct {
-	ID    uuid.UUID `json:"id"`
-	Name  string    `json:"name"`
-	Email string    `json:"email"`
+	ID    pgtype.UUID `json:"id"`
+	Name  string      `json:"name"`
+	Email string      `json:"email"`
 }
 
 func (q *Queries) CreateOrganization(ctx context.Context, arg CreateOrganizationParams) (CreateOrganizationRow, error) {
-	row := q.queryRow(ctx, q.createOrganizationStmt, createOrganization,
+	row := q.db.QueryRow(ctx, createOrganization,
 		arg.Name,
 		arg.Email,
 		arg.Passkey,
@@ -72,8 +71,8 @@ const deleteOrganization = `-- name: DeleteOrganization :exec
 DELETE FROM organizations WHERE id = $1
 `
 
-func (q *Queries) DeleteOrganization(ctx context.Context, id uuid.UUID) error {
-	_, err := q.exec(ctx, q.deleteOrganizationStmt, deleteOrganization, id)
+func (q *Queries) DeleteOrganization(ctx context.Context, id pgtype.UUID) error {
+	_, err := q.db.Exec(ctx, deleteOrganization, id)
 	return err
 }
 
@@ -83,12 +82,12 @@ WHERE user_id = $1 AND organization_id = $2
 `
 
 type DeleteUserFromOrganizationParams struct {
-	UserID         uuid.UUID `json:"user_id"`
-	OrganizationID uuid.UUID `json:"organization_id"`
+	UserID         pgtype.UUID `json:"user_id"`
+	OrganizationID pgtype.UUID `json:"organization_id"`
 }
 
 func (q *Queries) DeleteUserFromOrganization(ctx context.Context, arg DeleteUserFromOrganizationParams) error {
-	_, err := q.exec(ctx, q.deleteUserFromOrganizationStmt, deleteUserFromOrganization, arg.UserID, arg.OrganizationID)
+	_, err := q.db.Exec(ctx, deleteUserFromOrganization, arg.UserID, arg.OrganizationID)
 	return err
 }
 
@@ -99,14 +98,14 @@ WHERE om.user_id = $1
 `
 
 type GetAllOrganizationsByUserRow struct {
-	ID      uuid.UUID `json:"id"`
-	Name    string    `json:"name"`
-	Email   string    `json:"email"`
-	Passkey string    `json:"passkey"`
+	ID      pgtype.UUID `json:"id"`
+	Name    string      `json:"name"`
+	Email   string      `json:"email"`
+	Passkey string      `json:"passkey"`
 }
 
-func (q *Queries) GetAllOrganizationsByUser(ctx context.Context, userID uuid.UUID) ([]GetAllOrganizationsByUserRow, error) {
-	rows, err := q.query(ctx, q.getAllOrganizationsByUserStmt, getAllOrganizationsByUser, userID)
+func (q *Queries) GetAllOrganizationsByUser(ctx context.Context, userID pgtype.UUID) ([]GetAllOrganizationsByUserRow, error) {
+	rows, err := q.db.Query(ctx, getAllOrganizationsByUser, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -124,9 +123,6 @@ func (q *Queries) GetAllOrganizationsByUser(ctx context.Context, userID uuid.UUI
 		}
 		items = append(items, i)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
@@ -140,13 +136,13 @@ WHERE om.organization_id = $1
 `
 
 type GetAllUsersInOrganizationRow struct {
-	ID    uuid.UUID `json:"id"`
-	Name  string    `json:"name"`
-	Email string    `json:"email"`
+	ID    pgtype.UUID `json:"id"`
+	Name  string      `json:"name"`
+	Email string      `json:"email"`
 }
 
-func (q *Queries) GetAllUsersInOrganization(ctx context.Context, organizationID uuid.UUID) ([]GetAllUsersInOrganizationRow, error) {
-	rows, err := q.query(ctx, q.getAllUsersInOrganizationStmt, getAllUsersInOrganization, organizationID)
+func (q *Queries) GetAllUsersInOrganization(ctx context.Context, organizationID pgtype.UUID) ([]GetAllUsersInOrganizationRow, error) {
+	rows, err := q.db.Query(ctx, getAllUsersInOrganization, organizationID)
 	if err != nil {
 		return nil, err
 	}
@@ -158,9 +154,6 @@ func (q *Queries) GetAllUsersInOrganization(ctx context.Context, organizationID 
 			return nil, err
 		}
 		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
@@ -174,14 +167,14 @@ WHERE email = $1
 `
 
 type GetOrganizationByEmailRow struct {
-	ID        uuid.UUID `json:"id"`
-	Name      string    `json:"name"`
-	Email     string    `json:"email"`
-	CreatedBy uuid.UUID `json:"created_by"`
+	ID        pgtype.UUID `json:"id"`
+	Name      string      `json:"name"`
+	Email     string      `json:"email"`
+	CreatedBy pgtype.UUID `json:"created_by"`
 }
 
 func (q *Queries) GetOrganizationByEmail(ctx context.Context, email string) (GetOrganizationByEmailRow, error) {
-	row := q.queryRow(ctx, q.getOrganizationByEmailStmt, getOrganizationByEmail, email)
+	row := q.db.QueryRow(ctx, getOrganizationByEmail, email)
 	var i GetOrganizationByEmailRow
 	err := row.Scan(
 		&i.ID,
@@ -198,14 +191,14 @@ WHERE id = $1
 `
 
 type GetOrganizationByIDRow struct {
-	ID        uuid.UUID `json:"id"`
-	Name      string    `json:"name"`
-	Email     string    `json:"email"`
-	CreatedBy uuid.UUID `json:"created_by"`
+	ID        pgtype.UUID `json:"id"`
+	Name      string      `json:"name"`
+	Email     string      `json:"email"`
+	CreatedBy pgtype.UUID `json:"created_by"`
 }
 
-func (q *Queries) GetOrganizationByID(ctx context.Context, id uuid.UUID) (GetOrganizationByIDRow, error) {
-	row := q.queryRow(ctx, q.getOrganizationByIDStmt, getOrganizationByID, id)
+func (q *Queries) GetOrganizationByID(ctx context.Context, id pgtype.UUID) (GetOrganizationByIDRow, error) {
+	row := q.db.QueryRow(ctx, getOrganizationByID, id)
 	var i GetOrganizationByIDRow
 	err := row.Scan(
 		&i.ID,
@@ -223,13 +216,13 @@ WHERE o.id = $1
 `
 
 type GetOrganizationOwnerRow struct {
-	ID    uuid.UUID `json:"id"`
-	Email string    `json:"email"`
-	Name  string    `json:"name"`
+	ID    pgtype.UUID `json:"id"`
+	Email string      `json:"email"`
+	Name  string      `json:"name"`
 }
 
-func (q *Queries) GetOrganizationOwner(ctx context.Context, id uuid.UUID) (GetOrganizationOwnerRow, error) {
-	row := q.queryRow(ctx, q.getOrganizationOwnerStmt, getOrganizationOwner, id)
+func (q *Queries) GetOrganizationOwner(ctx context.Context, id pgtype.UUID) (GetOrganizationOwnerRow, error) {
+	row := q.db.QueryRow(ctx, getOrganizationOwner, id)
 	var i GetOrganizationOwnerRow
 	err := row.Scan(&i.ID, &i.Email, &i.Name)
 	return i, err
@@ -247,20 +240,20 @@ RETURNING id,name,email
 `
 
 type UpdateOrganizationParams struct {
-	Name    sql.NullString `json:"name"`
-	Email   sql.NullString `json:"email"`
-	Passkey sql.NullString `json:"passkey"`
-	ID      uuid.UUID      `json:"id"`
+	Name    pgtype.Text `json:"name"`
+	Email   pgtype.Text `json:"email"`
+	Passkey pgtype.Text `json:"passkey"`
+	ID      pgtype.UUID `json:"id"`
 }
 
 type UpdateOrganizationRow struct {
-	ID    uuid.UUID `json:"id"`
-	Name  string    `json:"name"`
-	Email string    `json:"email"`
+	ID    pgtype.UUID `json:"id"`
+	Name  string      `json:"name"`
+	Email string      `json:"email"`
 }
 
 func (q *Queries) UpdateOrganization(ctx context.Context, arg UpdateOrganizationParams) (UpdateOrganizationRow, error) {
-	row := q.queryRow(ctx, q.updateOrganizationStmt, updateOrganization,
+	row := q.db.QueryRow(ctx, updateOrganization,
 		arg.Name,
 		arg.Email,
 		arg.Passkey,
@@ -280,13 +273,13 @@ RETURNING role
 `
 
 type UpdateUserInOrganizationParams struct {
-	UserID         uuid.UUID `json:"user_id"`
-	OrganizationID uuid.UUID `json:"organization_id"`
-	Role           NullRole  `json:"role"`
+	UserID         pgtype.UUID `json:"user_id"`
+	OrganizationID pgtype.UUID `json:"organization_id"`
+	Role           NullRole    `json:"role"`
 }
 
 func (q *Queries) UpdateUserInOrganization(ctx context.Context, arg UpdateUserInOrganizationParams) (Role, error) {
-	row := q.queryRow(ctx, q.updateUserInOrganizationStmt, updateUserInOrganization, arg.UserID, arg.OrganizationID, arg.Role)
+	row := q.db.QueryRow(ctx, updateUserInOrganization, arg.UserID, arg.OrganizationID, arg.Role)
 	var role Role
 	err := row.Scan(&role)
 	return role, err
