@@ -9,6 +9,10 @@ WHERE email = $1;
 SELECT id, email, name, created_at, updated_at FROM users
 WHERE id = $1;
 
+-- name: GetUserForAuth :one
+SELECT id, email, name, password, created_at, updated_at FROM users
+WHERE email = $1;
+
 -- name: UpdateUser :one
 UPDATE users 
 SET 

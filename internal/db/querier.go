@@ -34,6 +34,7 @@ type Querier interface {
 	GetProjectsByUser(ctx context.Context, userID pgtype.UUID) ([]GetProjectsByUserRow, error)
 	GetUserByEmail(ctx context.Context, email string) (GetUserByEmailRow, error)
 	GetUserByID(ctx context.Context, id pgtype.UUID) (GetUserByIDRow, error)
+	GetUserForAuth(ctx context.Context, email string) (GetUserForAuthRow, error)
 	GetUserRoleInProject(ctx context.Context, arg GetUserRoleInProjectParams) (interface{}, error)
 	UpdateOrganization(ctx context.Context, arg UpdateOrganizationParams) (UpdateOrganizationRow, error)
 	UpdateProject(ctx context.Context, arg UpdateProjectParams) (UpdateProjectRow, error)

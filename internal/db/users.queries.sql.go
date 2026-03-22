@@ -101,6 +101,34 @@ func (q *Queries) GetUserByID(ctx context.Context, id pgtype.UUID) (GetUserByIDR
 	return i, err
 }
 
+const getUserForAuth = `-- name: GetUserForAuth :one
+SELECT id, email, name, password, created_at, updated_at FROM users
+WHERE email = $1
+`
+
+type GetUserForAuthRow struct {
+	ID        pgtype.UUID        `json:"id"`
+	Email     string             `json:"email"`
+	Name      string             `json:"name"`
+	Password  string             `json:"password"`
+	CreatedAt pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt pgtype.Timestamptz `json:"updated_at"`
+}
+
+func (q *Queries) GetUserForAuth(ctx context.Context, email string) (GetUserForAuthRow, error) {
+	row := q.db.QueryRow(ctx, getUserForAuth, email)
+	var i GetUserForAuthRow
+	err := row.Scan(
+		&i.ID,
+		&i.Email,
+		&i.Name,
+		&i.Password,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const updateUser = `-- name: UpdateUser :one
 UPDATE users 
 SET 
