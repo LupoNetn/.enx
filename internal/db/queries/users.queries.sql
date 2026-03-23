@@ -26,3 +26,9 @@ RETURNING id, email, name, created_at, updated_at;
 
 -- name: DeleteUser :exec
 DELETE FROM users WHERE id = $1;
+
+
+-- name: GetAllUserOrganizations :many
+SELECT o.id,o.name,o.created_by,o.passkey,om.role FROM organizations o
+INNER JOIN organization_members om ON om.organization_id = o.id
+WHERE om.user_id = $1;
