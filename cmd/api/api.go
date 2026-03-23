@@ -8,6 +8,7 @@ import (
 	"github.com/luponetn/.enx/internal/config"
 	"github.com/luponetn/.enx/internal/db"
 	"github.com/luponetn/.enx/internal/organization"
+	"github.com/luponetn/.enx/internal/project"
 )
 
 type Server struct {
@@ -29,6 +30,7 @@ func CreateRouter(s *Server) *http.ServeMux {
 	// register auth routes
 	auth.RegisterRoutes(mux, s.queries, s.config)
 	organization.RegisterRoutes(mux, s.queries, s.Protected)
+	project.RegisterRoutes(mux, s.queries, s.Protected)
 
 	return mux
 }

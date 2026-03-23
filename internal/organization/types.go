@@ -6,3 +6,9 @@ type CreateOrganizationRequest struct {
 	Email string `json:"email" binding:"required email"`
 	Passkey string `json:"passkey" binding:"required"`
 }
+
+type UpdateOrganizationRequest struct {
+	Name    *string `json:"name"`
+	Email   *string `json:"email"`
+	Passkey *string `json:"passkey"`
+}
