@@ -8,8 +8,8 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5/pgtype"
-	"github.com/luponetn/.enx/internal/db"
-	"github.com/luponetn/.enx/internal/utils"
+	"github.com/luponetn/enx/internal/db"
+	"github.com/luponetn/enx/internal/utils"
 )
 
 type Handler struct {

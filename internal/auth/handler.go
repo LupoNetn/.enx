@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/luponetn/.enx/internal/utils"
+	"github.com/luponetn/enx/internal/utils"
 )
 
 type AuthHandler struct {

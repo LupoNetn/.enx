@@ -5,9 +5,9 @@ import (
 	"errors"
 	"log/slog"
 
-	"github.com/luponetn/.enx/internal/config"
-	"github.com/luponetn/.enx/internal/db"
-	"github.com/luponetn/.enx/internal/utils"
+	"github.com/luponetn/enx/internal/config"
+	"github.com/luponetn/enx/internal/db"
+	"github.com/luponetn/enx/internal/utils"
 )
 
 type AuthService struct {

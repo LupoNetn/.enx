@@ -1,4 +1,4 @@
-module github.com/luponetn/.enx
+module github.com/luponetn/enx
 
 go 1.25.5
 

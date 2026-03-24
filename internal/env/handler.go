@@ -5,7 +5,7 @@ import (
 	"log/slog"
 	"net/http"
 
-	"github.com/luponetn/.enx/internal/utils"
+	"github.com/luponetn/enx/internal/utils"
 )
 
 type Handler struct {

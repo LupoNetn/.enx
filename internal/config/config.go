@@ -5,7 +5,7 @@ import (
 	"os"
 
 	"github.com/joho/godotenv"
-	"github.com/luponetn/.enx/internal/utils"
+	"github.com/luponetn/enx/internal/utils"
 )
 
 type Config struct {

@@ -1,6 +1,6 @@
 package env
 
-import "github.com/luponetn/.enx/internal/db"
+import "github.com/luponetn/enx/internal/db"
 
 type Svc interface {
 }

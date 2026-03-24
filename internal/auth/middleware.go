@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/jackc/pgx/v5/pgtype"
-	"github.com/luponetn/.enx/internal/utils"
+	"github.com/luponetn/enx/internal/utils"
 )
 
 type contextKey string

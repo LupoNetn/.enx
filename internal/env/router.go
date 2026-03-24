@@ -3,7 +3,7 @@ package env
 import (
 	"net/http"
 
-	"github.com/luponetn/.enx/internal/db"
+	"github.com/luponetn/enx/internal/db"
 )
 
 type authmiddleware  func(handler http.HandlerFunc) http.Handler

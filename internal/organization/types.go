@@ -11,4 +11,4 @@ type UpdateOrganizationRequest struct {
 	Name    *string `json:"name"`
 	Email   *string `json:"email"`
 	Passkey *string `json:"passkey"`
-}
+}

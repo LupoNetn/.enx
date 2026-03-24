@@ -4,12 +4,12 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/luponetn/.enx/internal/auth"
-	"github.com/luponetn/.enx/internal/config"
-	"github.com/luponetn/.enx/internal/db"
-	"github.com/luponetn/.enx/internal/env"
-	"github.com/luponetn/.enx/internal/organization"
-	"github.com/luponetn/.enx/internal/project"
+	"github.com/luponetn/enx/internal/auth"
+	"github.com/luponetn/enx/internal/config"
+	"github.com/luponetn/enx/internal/db"
+	"github.com/luponetn/enx/internal/env"
+	"github.com/luponetn/enx/internal/organization"
+	"github.com/luponetn/enx/internal/project"
 )
 
 type Server struct {
