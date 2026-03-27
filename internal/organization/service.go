@@ -17,6 +17,7 @@ type Svc interface {
 	DeleteOrganization(ctx context.Context, id pgtype.UUID) error
 	GetAllOrganizationsByUser(ctx context.Context, userID pgtype.UUID) ([]db.GetAllOrganizationsByUserRow, error)
 	GetAllUsersInOrganization(ctx context.Context, organizationID pgtype.UUID) ([]db.GetAllUsersInOrganizationRow, error)
+	GetOrganizationByName(ctx context.Context, name string) (db.GetOrganizationByNameRow, error)
 }
 
 
@@ -45,4 +46,8 @@ func (s *Service) GetAllOrganizationsByUser(ctx context.Context, userID pgtype.U
 
 func (s *Service) GetAllUsersInOrganization(ctx context.Context, organizationID pgtype.UUID) ([]db.GetAllUsersInOrganizationRow, error) {
 	return s.queries.GetAllUsersInOrganization(ctx, organizationID)
+}
+
+func (s *Service) GetOrganizationByName(ctx context.Context, name string) (db.GetOrganizationByNameRow, error) {
+	return s.queries.GetOrganizationByName(ctx, name)
 }

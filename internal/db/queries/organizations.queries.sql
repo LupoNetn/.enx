@@ -50,6 +50,10 @@ SELECT u.id,u.name,u.email FROM users u
 INNER JOIN organization_members om ON om.user_id = u.id
 WHERE om.organization_id = $1;
 
+-- name: GetOrganizationByName :one
+SELECT id,name,email,created_by FROM organizations
+WHERE name = $1;
+
 -- name: GetAllOrganizationsByUser :many
 SELECT o.id,o.name,o.email,o.passkey FROM organizations o 
 INNER JOIN organization_members om ON om.organization_id = o.id

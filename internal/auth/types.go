@@ -1,5 +1,9 @@
 package auth
 
+import (
+	"github.com/google/uuid"
+)
+
 type RegisterInput struct {
 	Email    string
 	Name     string
@@ -11,8 +15,14 @@ type LoginInput struct {
 	Password string
 }
 
+type UserResponse struct {
+	ID    uuid.UUID `json:"id"`
+	Email string    `json:"email"`
+	Name  string    `json:"name"`
+}
+
 type AuthResponse struct {
-	User   any        `json:"user"`
+	User  UserResponse `json:"user"`
 	Tokens *TokenPair `json:"tokens"`
 }
 

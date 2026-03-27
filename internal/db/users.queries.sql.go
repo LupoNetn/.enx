@@ -49,6 +49,46 @@ func (q *Queries) DeleteUser(ctx context.Context, id pgtype.UUID) error {
 	return err
 }
 
+const getAllUserOrganizations = `-- name: GetAllUserOrganizations :many
+SELECT o.id,o.name,o.created_by,o.passkey,om.role FROM organizations o
+INNER JOIN organization_members om ON om.organization_id = o.id
+WHERE om.user_id = $1
+`
+
+type GetAllUserOrganizationsRow struct {
+	ID        pgtype.UUID `json:"id"`
+	Name      string      `json:"name"`
+	CreatedBy pgtype.UUID `json:"created_by"`
+	Passkey   string      `json:"passkey"`
+	Role      Role        `json:"role"`
+}
+
+func (q *Queries) GetAllUserOrganizations(ctx context.Context, userID pgtype.UUID) ([]GetAllUserOrganizationsRow, error) {
+	rows, err := q.db.Query(ctx, getAllUserOrganizations, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetAllUserOrganizationsRow
+	for rows.Next() {
+		var i GetAllUserOrganizationsRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.CreatedBy,
+			&i.Passkey,
+			&i.Role,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getUserByEmail = `-- name: GetUserByEmail :one
 SELECT id, email, name, created_at, updated_at FROM users
 WHERE email = $1

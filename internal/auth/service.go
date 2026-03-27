@@ -5,6 +5,7 @@ import (
 	"errors"
 	"log/slog"
 
+	"github.com/google/uuid"
 	"github.com/luponetn/enx/internal/config"
 	"github.com/luponetn/enx/internal/db"
 	"github.com/luponetn/enx/internal/utils"
@@ -52,7 +53,14 @@ func (s *AuthService) Register(ctx context.Context, input RegisterInput) (*AuthR
 		return nil, errors.New("failed to generate tokens")
 	}
 
-	return &AuthResponse{User: user, Tokens: tokens}, nil
+	return &AuthResponse{
+		User: UserResponse{
+			ID:    uuid.UUID(user.ID.Bytes),
+			Email: user.Email,
+			Name:  input.Name,
+		},
+		Tokens: tokens,
+	}, nil
 }
 
 func (s *AuthService) Login(ctx context.Context, input LoginInput) (*AuthResponse, error) {
@@ -75,10 +83,10 @@ func (s *AuthService) Login(ctx context.Context, input LoginInput) (*AuthRespons
 	}
 
 	return &AuthResponse{
-		User: map[string]any{
-			"id":    user.ID,
-			"email": user.Email,
-			"name":  user.Name,
+		User: UserResponse{
+			ID:    uuid.UUID(user.ID.Bytes),
+			Email: user.Email,
+			Name:  user.Name,
 		},
 		Tokens: tokens,
 	}, nil

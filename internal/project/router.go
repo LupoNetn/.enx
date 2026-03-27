@@ -17,4 +17,5 @@ func RegisterRoutes(mux *http.ServeMux, queries *db.Queries, protected authmiddl
 	mux.Handle("DELETE /projects/{id}", protected(h.DeleteProject))
 	mux.Handle("GET /users/{user_id}/projects", protected(h.GetProjectsByUser))
 	mux.Handle("GET /projects/{id}/members", protected(h.GetAllUsersInProject))
+	mux.Handle("GET /projects/name/{name}", protected(h.GetProjectByName))
 }

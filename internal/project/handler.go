@@ -58,6 +58,16 @@ func (h *Handler) CreateProject(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
+	//check if project name already exists in the organization
+	_, err = h.service.GetProjectByName(ctx, db.GetProjectByNameParams{
+		Name:           req.Name,
+		OrganizationID: parsedOrgUUID,
+	})
+	if err == nil {
+		utils.WriteError(w, http.StatusConflict, "project name already exists in this organization")
+		return
+	}
+
 	project, err := h.service.CreateProject(ctx, params)
 	if err != nil {
 		slog.Error("Could not create a new Project", "err", err)
@@ -189,5 +199,39 @@ func (h *Handler) GetAllUsersInProject(w http.ResponseWriter, r *http.Request) {
 	utils.WriteJSON(w, http.StatusOK, map[string]any{
 		"message": "successfully fetched project members",
 		"data":    users,
+	})
+}
+
+func (h *Handler) GetProjectByName(w http.ResponseWriter, r *http.Request) {
+	name := r.PathValue("name")
+	orgID := r.URL.Query().Get("organization_id")
+
+	if name == "" || orgID == "" {
+		utils.WriteError(w, http.StatusBadRequest, "name and organization_id are required")
+		return
+	}
+
+	parsedOrgUUID, err := utils.StringToUUID(orgID)
+	if err != nil {
+		utils.WriteError(w, http.StatusBadRequest, "invalid organization id")
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	project, err := h.service.GetProjectByName(ctx, db.GetProjectByNameParams{
+		Name:           name,
+		OrganizationID: parsedOrgUUID,
+	})
+	if err != nil {
+		slog.Error("Could not get project by name", "err", err)
+		utils.WriteError(w, http.StatusNotFound, "project not found")
+		return
+	}
+
+	utils.WriteJSON(w, http.StatusOK, map[string]any{
+		"message": "successfully fetched project",
+		"data":    project,
 	})
 }

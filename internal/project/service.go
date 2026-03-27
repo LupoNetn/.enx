@@ -17,6 +17,7 @@ type Svc interface {
 	DeleteProject(ctx context.Context, id pgtype.UUID) error
 	GetProjectsByUser(ctx context.Context, userID pgtype.UUID) ([]db.GetProjectsByUserRow, error)
 	GetAllUsersInProject(ctx context.Context, projectID pgtype.UUID) ([]db.GetAllUsersInProjectRow, error)
+	GetProjectByName(ctx context.Context, args db.GetProjectByNameParams) (db.GetProjectByNameRow, error)
 }
 
 func NewProjectService(queries *db.Queries) Svc {
@@ -43,4 +44,8 @@ func (s *Service) GetProjectsByUser(ctx context.Context, userID pgtype.UUID) ([]
 
 func (s *Service) GetAllUsersInProject(ctx context.Context, projectID pgtype.UUID) ([]db.GetAllUsersInProjectRow, error) {
 	return s.queries.GetAllUsersInProject(ctx, projectID)
+}
+
+func (s *Service) GetProjectByName(ctx context.Context, args db.GetProjectByNameParams) (db.GetProjectByNameRow, error) {
+	return s.queries.GetProjectByName(ctx, args)
 }

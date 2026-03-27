@@ -209,6 +209,30 @@ func (q *Queries) GetOrganizationByID(ctx context.Context, id pgtype.UUID) (GetO
 	return i, err
 }
 
+const getOrganizationByName = `-- name: GetOrganizationByName :one
+SELECT id,name,email,created_by FROM organizations
+WHERE name = $1
+`
+
+type GetOrganizationByNameRow struct {
+	ID        pgtype.UUID `json:"id"`
+	Name      string      `json:"name"`
+	Email     string      `json:"email"`
+	CreatedBy pgtype.UUID `json:"created_by"`
+}
+
+func (q *Queries) GetOrganizationByName(ctx context.Context, name string) (GetOrganizationByNameRow, error) {
+	row := q.db.QueryRow(ctx, getOrganizationByName, name)
+	var i GetOrganizationByNameRow
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Email,
+		&i.CreatedBy,
+	)
+	return i, err
+}
+
 const getOrganizationOwner = `-- name: GetOrganizationOwner :one
 SELECT u.id,u.email,u.name FROM users u
 INNER JOIN organizations o ON o.created_by = u.id

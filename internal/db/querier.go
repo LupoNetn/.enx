@@ -22,10 +22,12 @@ type Querier interface {
 	DeleteUserFromOrganization(ctx context.Context, arg DeleteUserFromOrganizationParams) error
 	DeleteUserFromProject(ctx context.Context, arg DeleteUserFromProjectParams) error
 	GetAllOrganizationsByUser(ctx context.Context, userID pgtype.UUID) ([]GetAllOrganizationsByUserRow, error)
+	GetAllUserOrganizations(ctx context.Context, userID pgtype.UUID) ([]GetAllUserOrganizationsRow, error)
 	GetAllUsersInOrganization(ctx context.Context, organizationID pgtype.UUID) ([]GetAllUsersInOrganizationRow, error)
 	GetAllUsersInProject(ctx context.Context, projectID pgtype.UUID) ([]GetAllUsersInProjectRow, error)
 	GetOrganizationByEmail(ctx context.Context, email string) (GetOrganizationByEmailRow, error)
 	GetOrganizationByID(ctx context.Context, id pgtype.UUID) (GetOrganizationByIDRow, error)
+	GetOrganizationByName(ctx context.Context, name string) (GetOrganizationByNameRow, error)
 	GetOrganizationOwner(ctx context.Context, id pgtype.UUID) (GetOrganizationOwnerRow, error)
 	GetProjectByID(ctx context.Context, id pgtype.UUID) (GetProjectByIDRow, error)
 	GetProjectByName(ctx context.Context, arg GetProjectByNameParams) (GetProjectByNameRow, error)

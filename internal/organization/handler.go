@@ -53,6 +53,13 @@ func (h *Handler) CreateOrganization(w http.ResponseWriter, r *http.Request) {
   ctx, cancel := context.WithTimeout(context.Background(), 10 * time.Second)
   defer cancel()
 
+  //check if organization name already exists
+  _, err = h.service.GetOrganizationByName(ctx, req.Name)
+  if err == nil {
+	utils.WriteError(w, http.StatusConflict, "organization name already exists")
+	return
+  }
+
   organization, err := h.service.CreateOrganization(ctx, params)
   if err != nil {
 	slog.Error("Could not create a new Organization", "err", err)
@@ -189,5 +196,28 @@ func (h *Handler) GetAllUsersInOrganization(w http.ResponseWriter, r *http.Reque
 	utils.WriteJSON(w, http.StatusOK, map[string]any{
 		"message": "successfully fetched organization members",
 		"data":    users,
+	})
+}
+
+func (h *Handler) GetOrganizationByName(w http.ResponseWriter, r *http.Request) {
+	name := r.PathValue("name")
+	if name == "" {
+		utils.WriteError(w, http.StatusBadRequest, "name parameter is required")
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	organization, err := h.service.GetOrganizationByName(ctx, name)
+	if err != nil {
+		slog.Error("Could not get organization by name", "err", err)
+		utils.WriteError(w, http.StatusNotFound, "organization not found")
+		return
+	}
+
+	utils.WriteJSON(w, http.StatusOK, map[string]any{
+		"message": "successfully fetched organization",
+		"data":    organization,
 	})
 }
