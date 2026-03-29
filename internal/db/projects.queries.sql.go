@@ -8,6 +8,7 @@ package db
 import (
 	"context"
 
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
@@ -18,8 +19,8 @@ RETURNING user_id, project_id, created_at, updated_at, role, joined_at
 `
 
 type AddUserToProjectParams struct {
-	UserID    pgtype.UUID `json:"user_id"`
-	ProjectID pgtype.UUID `json:"project_id"`
+	UserID    uuid.UUID   `json:"user_id"`
+	ProjectID uuid.UUID   `json:"project_id"`
 	Role      interface{} `json:"role"`
 }
 
@@ -44,16 +45,16 @@ RETURNING id, name, organization_id, created_at
 `
 
 type CreateProjectParams struct {
-	Name           string      `json:"name"`
-	Passkey        string      `json:"passkey"`
-	OrganizationID pgtype.UUID `json:"organization_id"`
-	CreatedBy      pgtype.UUID `json:"created_by"`
+	Name           string    `json:"name"`
+	Passkey        string    `json:"passkey"`
+	OrganizationID uuid.UUID `json:"organization_id"`
+	CreatedBy      uuid.UUID `json:"created_by"`
 }
 
 type CreateProjectRow struct {
-	ID             pgtype.UUID        `json:"id"`
+	ID             uuid.UUID          `json:"id"`
 	Name           string             `json:"name"`
-	OrganizationID pgtype.UUID        `json:"organization_id"`
+	OrganizationID uuid.UUID          `json:"organization_id"`
 	CreatedAt      pgtype.Timestamptz `json:"created_at"`
 }
 
@@ -79,7 +80,7 @@ DELETE FROM projects
 WHERE id = $1
 `
 
-func (q *Queries) DeleteProject(ctx context.Context, id pgtype.UUID) error {
+func (q *Queries) DeleteProject(ctx context.Context, id uuid.UUID) error {
 	_, err := q.db.Exec(ctx, deleteProject, id)
 	return err
 }
@@ -90,8 +91,8 @@ WHERE user_id = $1 AND project_id = $2
 `
 
 type DeleteUserFromProjectParams struct {
-	UserID    pgtype.UUID `json:"user_id"`
-	ProjectID pgtype.UUID `json:"project_id"`
+	UserID    uuid.UUID `json:"user_id"`
+	ProjectID uuid.UUID `json:"project_id"`
 }
 
 func (q *Queries) DeleteUserFromProject(ctx context.Context, arg DeleteUserFromProjectParams) error {
@@ -107,14 +108,14 @@ WHERE pm.project_id = $1
 `
 
 type GetAllUsersInProjectRow struct {
-	ID       pgtype.UUID        `json:"id"`
+	ID       uuid.UUID          `json:"id"`
 	Name     string             `json:"name"`
 	Email    string             `json:"email"`
 	Role     interface{}        `json:"role"`
 	JoinedAt pgtype.Timestamptz `json:"joined_at"`
 }
 
-func (q *Queries) GetAllUsersInProject(ctx context.Context, projectID pgtype.UUID) ([]GetAllUsersInProjectRow, error) {
+func (q *Queries) GetAllUsersInProject(ctx context.Context, projectID uuid.UUID) ([]GetAllUsersInProjectRow, error) {
 	rows, err := q.db.Query(ctx, getAllUsersInProject, projectID)
 	if err != nil {
 		return nil, err
@@ -147,14 +148,14 @@ WHERE id = $1
 `
 
 type GetProjectByIDRow struct {
-	ID             pgtype.UUID        `json:"id"`
+	ID             uuid.UUID          `json:"id"`
 	Name           string             `json:"name"`
-	OrganizationID pgtype.UUID        `json:"organization_id"`
-	CreatedBy      pgtype.UUID        `json:"created_by"`
+	OrganizationID uuid.UUID          `json:"organization_id"`
+	CreatedBy      uuid.UUID          `json:"created_by"`
 	CreatedAt      pgtype.Timestamptz `json:"created_at"`
 }
 
-func (q *Queries) GetProjectByID(ctx context.Context, id pgtype.UUID) (GetProjectByIDRow, error) {
+func (q *Queries) GetProjectByID(ctx context.Context, id uuid.UUID) (GetProjectByIDRow, error) {
 	row := q.db.QueryRow(ctx, getProjectByID, id)
 	var i GetProjectByIDRow
 	err := row.Scan(
@@ -174,21 +175,54 @@ WHERE name = $1 AND organization_id = $2
 `
 
 type GetProjectByNameParams struct {
-	Name           string      `json:"name"`
-	OrganizationID pgtype.UUID `json:"organization_id"`
+	Name           string    `json:"name"`
+	OrganizationID uuid.UUID `json:"organization_id"`
 }
 
 type GetProjectByNameRow struct {
-	ID             pgtype.UUID        `json:"id"`
+	ID             uuid.UUID          `json:"id"`
 	Name           string             `json:"name"`
-	OrganizationID pgtype.UUID        `json:"organization_id"`
-	CreatedBy      pgtype.UUID        `json:"created_by"`
+	OrganizationID uuid.UUID          `json:"organization_id"`
+	CreatedBy      uuid.UUID          `json:"created_by"`
 	CreatedAt      pgtype.Timestamptz `json:"created_at"`
 }
 
 func (q *Queries) GetProjectByName(ctx context.Context, arg GetProjectByNameParams) (GetProjectByNameRow, error) {
 	row := q.db.QueryRow(ctx, getProjectByName, arg.Name, arg.OrganizationID)
 	var i GetProjectByNameRow
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.OrganizationID,
+		&i.CreatedBy,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
+const getProjectByNameForUser = `-- name: GetProjectByNameForUser :one
+SELECT p.id, p.name, p.organization_id, p.created_by, p.created_at
+FROM projects p
+INNER JOIN project_members pm ON pm.project_id = p.id
+WHERE p.name = $1 AND pm.user_id = $2
+`
+
+type GetProjectByNameForUserParams struct {
+	Name   string    `json:"name"`
+	UserID uuid.UUID `json:"user_id"`
+}
+
+type GetProjectByNameForUserRow struct {
+	ID             uuid.UUID          `json:"id"`
+	Name           string             `json:"name"`
+	OrganizationID uuid.UUID          `json:"organization_id"`
+	CreatedBy      uuid.UUID          `json:"created_by"`
+	CreatedAt      pgtype.Timestamptz `json:"created_at"`
+}
+
+func (q *Queries) GetProjectByNameForUser(ctx context.Context, arg GetProjectByNameForUserParams) (GetProjectByNameForUserRow, error) {
+	row := q.db.QueryRow(ctx, getProjectByNameForUser, arg.Name, arg.UserID)
+	var i GetProjectByNameForUserRow
 	err := row.Scan(
 		&i.ID,
 		&i.Name,
@@ -206,12 +240,12 @@ WHERE p.id = $1
 `
 
 type GetProjectOwnerRow struct {
-	ID    pgtype.UUID `json:"id"`
-	Email string      `json:"email"`
-	Name  string      `json:"name"`
+	ID    uuid.UUID `json:"id"`
+	Email string    `json:"email"`
+	Name  string    `json:"name"`
 }
 
-func (q *Queries) GetProjectOwner(ctx context.Context, id pgtype.UUID) (GetProjectOwnerRow, error) {
+func (q *Queries) GetProjectOwner(ctx context.Context, id uuid.UUID) (GetProjectOwnerRow, error) {
 	row := q.db.QueryRow(ctx, getProjectOwner, id)
 	var i GetProjectOwnerRow
 	err := row.Scan(&i.ID, &i.Email, &i.Name)
@@ -225,14 +259,14 @@ WHERE organization_id = $1
 `
 
 type GetProjectsByOrganizationRow struct {
-	ID             pgtype.UUID        `json:"id"`
+	ID             uuid.UUID          `json:"id"`
 	Name           string             `json:"name"`
-	OrganizationID pgtype.UUID        `json:"organization_id"`
-	CreatedBy      pgtype.UUID        `json:"created_by"`
+	OrganizationID uuid.UUID          `json:"organization_id"`
+	CreatedBy      uuid.UUID          `json:"created_by"`
 	CreatedAt      pgtype.Timestamptz `json:"created_at"`
 }
 
-func (q *Queries) GetProjectsByOrganization(ctx context.Context, organizationID pgtype.UUID) ([]GetProjectsByOrganizationRow, error) {
+func (q *Queries) GetProjectsByOrganization(ctx context.Context, organizationID uuid.UUID) ([]GetProjectsByOrganizationRow, error) {
 	rows, err := q.db.Query(ctx, getProjectsByOrganization, organizationID)
 	if err != nil {
 		return nil, err
@@ -266,15 +300,15 @@ WHERE pm.user_id = $1
 `
 
 type GetProjectsByUserRow struct {
-	ID             pgtype.UUID        `json:"id"`
+	ID             uuid.UUID          `json:"id"`
 	Name           string             `json:"name"`
-	OrganizationID pgtype.UUID        `json:"organization_id"`
-	CreatedBy      pgtype.UUID        `json:"created_by"`
+	OrganizationID uuid.UUID          `json:"organization_id"`
+	CreatedBy      uuid.UUID          `json:"created_by"`
 	CreatedAt      pgtype.Timestamptz `json:"created_at"`
 	Role           interface{}        `json:"role"`
 }
 
-func (q *Queries) GetProjectsByUser(ctx context.Context, userID pgtype.UUID) ([]GetProjectsByUserRow, error) {
+func (q *Queries) GetProjectsByUser(ctx context.Context, userID uuid.UUID) ([]GetProjectsByUserRow, error) {
 	rows, err := q.db.Query(ctx, getProjectsByUser, userID)
 	if err != nil {
 		return nil, err
@@ -307,8 +341,8 @@ WHERE user_id = $1 AND project_id = $2
 `
 
 type GetUserRoleInProjectParams struct {
-	UserID    pgtype.UUID `json:"user_id"`
-	ProjectID pgtype.UUID `json:"project_id"`
+	UserID    uuid.UUID `json:"user_id"`
+	ProjectID uuid.UUID `json:"project_id"`
 }
 
 func (q *Queries) GetUserRoleInProject(ctx context.Context, arg GetUserRoleInProjectParams) (interface{}, error) {
@@ -331,13 +365,13 @@ RETURNING id, name, organization_id, updated_at
 type UpdateProjectParams struct {
 	Name    pgtype.Text `json:"name"`
 	Passkey pgtype.Text `json:"passkey"`
-	ID      pgtype.UUID `json:"id"`
+	ID      uuid.UUID   `json:"id"`
 }
 
 type UpdateProjectRow struct {
-	ID             pgtype.UUID        `json:"id"`
+	ID             uuid.UUID          `json:"id"`
 	Name           string             `json:"name"`
-	OrganizationID pgtype.UUID        `json:"organization_id"`
+	OrganizationID uuid.UUID          `json:"organization_id"`
 	UpdatedAt      pgtype.Timestamptz `json:"updated_at"`
 }
 
@@ -361,8 +395,8 @@ RETURNING role
 `
 
 type UpdateUserInProjectParams struct {
-	UserID    pgtype.UUID `json:"user_id"`
-	ProjectID pgtype.UUID `json:"project_id"`
+	UserID    uuid.UUID   `json:"user_id"`
+	ProjectID uuid.UUID   `json:"project_id"`
 	Role      interface{} `json:"role"`
 }
 

@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/luponetn/enx/internal/auth"
 	"github.com/luponetn/enx/internal/db"
 	"github.com/luponetn/enx/internal/utils"
 )
@@ -206,24 +207,39 @@ func (h *Handler) GetProjectByName(w http.ResponseWriter, r *http.Request) {
 	name := r.PathValue("name")
 	orgID := r.URL.Query().Get("organization_id")
 
-	if name == "" || orgID == "" {
-		utils.WriteError(w, http.StatusBadRequest, "name and organization_id are required")
-		return
-	}
-
-	parsedOrgUUID, err := utils.StringToUUID(orgID)
-	if err != nil {
-		utils.WriteError(w, http.StatusBadRequest, "invalid organization id")
+	if name == "" {
+		utils.WriteError(w, http.StatusBadRequest, "project name is required")
 		return
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	project, err := h.service.GetProjectByName(ctx, db.GetProjectByNameParams{
-		Name:           name,
-		OrganizationID: parsedOrgUUID,
-	})
+	var project interface{}
+	var err error
+
+	if orgID != "" {
+		parsedOrgUUID, errUUID := utils.StringToUUID(orgID)
+		if errUUID != nil {
+			utils.WriteError(w, http.StatusBadRequest, "invalid organization id")
+			return
+		}
+		project, err = h.service.GetProjectByName(ctx, db.GetProjectByNameParams{
+			Name:           name,
+			OrganizationID: parsedOrgUUID,
+		})
+	} else {
+		userID, errAuth := auth.GetUserIDFromContext(r.Context())
+		if errAuth != nil {
+			utils.WriteError(w, http.StatusUnauthorized, "unauthorized")
+			return
+		}
+		project, err = h.service.GetProjectByNameForUser(ctx, db.GetProjectByNameForUserParams{
+			Name:   name,
+			UserID: userID,
+		})
+	}
+
 	if err != nil {
 		slog.Error("Could not get project by name", "err", err)
 		utils.WriteError(w, http.StatusNotFound, "project not found")

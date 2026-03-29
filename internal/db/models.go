@@ -6,8 +6,10 @@ package db
 
 import (
 	"database/sql/driver"
+	"encoding/json"
 	"fmt"
 
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
@@ -55,29 +57,29 @@ func (ns NullRole) Value() (driver.Value, error) {
 }
 
 type Envs struct {
-	ID          pgtype.UUID        `json:"id"`
+	ID          uuid.UUID          `json:"id"`
 	Name        string             `json:"name"`
-	ProjectID   pgtype.UUID        `json:"project_id"`
-	Variables   []byte             `json:"variables"`
+	ProjectID   uuid.UUID          `json:"project_id"`
+	Variables   json.RawMessage    `json:"variables"`
 	Version     int32              `json:"version"`
 	Description string             `json:"description"`
-	CreatedBy   pgtype.UUID        `json:"created_by"`
+	CreatedBy   uuid.UUID          `json:"created_by"`
 	CreatedAt   pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt   pgtype.Timestamptz `json:"updated_at"`
 }
 
 type OrganizationMembers struct {
-	UserID         pgtype.UUID        `json:"user_id"`
-	OrganizationID pgtype.UUID        `json:"organization_id"`
+	UserID         uuid.UUID          `json:"user_id"`
+	OrganizationID uuid.UUID          `json:"organization_id"`
 	Role           Role               `json:"role"`
 	CreatedAt      pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt      pgtype.Timestamptz `json:"updated_at"`
 }
 
 type Organizations struct {
-	ID        pgtype.UUID        `json:"id"`
+	ID        uuid.UUID          `json:"id"`
 	Name      string             `json:"name"`
-	CreatedBy pgtype.UUID        `json:"created_by"`
+	CreatedBy uuid.UUID          `json:"created_by"`
 	CreatedAt pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt pgtype.Timestamptz `json:"updated_at"`
 	Email     string             `json:"email"`
@@ -85,8 +87,8 @@ type Organizations struct {
 }
 
 type ProjectMembers struct {
-	UserID    pgtype.UUID        `json:"user_id"`
-	ProjectID pgtype.UUID        `json:"project_id"`
+	UserID    uuid.UUID          `json:"user_id"`
+	ProjectID uuid.UUID          `json:"project_id"`
 	CreatedAt pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt pgtype.Timestamptz `json:"updated_at"`
 	Role      interface{}        `json:"role"`
@@ -94,17 +96,17 @@ type ProjectMembers struct {
 }
 
 type Projects struct {
-	ID             pgtype.UUID        `json:"id"`
+	ID             uuid.UUID          `json:"id"`
 	Name           string             `json:"name"`
-	OrganizationID pgtype.UUID        `json:"organization_id"`
+	OrganizationID uuid.UUID          `json:"organization_id"`
 	CreatedAt      pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt      pgtype.Timestamptz `json:"updated_at"`
 	Passkey        string             `json:"passkey"`
-	CreatedBy      pgtype.UUID        `json:"created_by"`
+	CreatedBy      uuid.UUID          `json:"created_by"`
 }
 
 type Users struct {
-	ID        pgtype.UUID        `json:"id"`
+	ID        uuid.UUID          `json:"id"`
 	Email     string             `json:"email"`
 	Password  string             `json:"password"`
 	CreatedAt pgtype.Timestamptz `json:"created_at"`

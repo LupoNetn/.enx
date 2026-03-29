@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/google/uuid"
 	"github.com/luponetn/enx/internal/utils"
 )
 
@@ -48,10 +48,10 @@ func AuthMiddleware(accessSecret string, next http.Handler) http.Handler {
 }
 
 // GetUserIDFromContext extracts the authenticated user's id from the request context
-func GetUserIDFromContext(ctx context.Context) (pgtype.UUID, error) {
-	userID, ok := ctx.Value(UserIDKey).(pgtype.UUID)
+func GetUserIDFromContext(ctx context.Context) (uuid.UUID, error) {
+	userID, ok := ctx.Value(UserIDKey).(uuid.UUID)
 	if !ok {
-		return pgtype.UUID{}, errors.New("user id not found in context")
+		return uuid.Nil, errors.New("user id not found in context")
 	}
 	return userID, nil
 }

@@ -13,6 +13,12 @@ SELECT id, name, organization_id, created_by, created_at
 FROM projects
 WHERE name = $1 AND organization_id = $2;
 
+-- name: GetProjectByNameForUser :one
+SELECT p.id, p.name, p.organization_id, p.created_by, p.created_at
+FROM projects p
+INNER JOIN project_members pm ON pm.project_id = p.id
+WHERE p.name = $1 AND pm.user_id = $2;
+
 -- name: GetProjectsByOrganization :many
 SELECT id, name, organization_id, created_by, created_at
 FROM projects

@@ -19,5 +19,5 @@ func RegisterRoutes(mux *http.ServeMux, queries *db.Queries, protected authmiddl
 	 mux.Handle("DELETE /organizations/{id}", protected(h.DeleteOrganization))
 	 mux.Handle("GET /users/{user_id}/organizations", protected(h.GetAllOrganizationsByUser))
 	 mux.Handle("GET /organizations/{id}/members", protected(h.GetAllUsersInOrganization))
-	 mux.Handle("GET /organizations/name/{name}", protected(h.GetOrganizationByName))
+	 mux.Handle("GET /organizations/find/name/{name}", protected(h.GetOrganizationByName))
 }

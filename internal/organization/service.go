@@ -3,7 +3,7 @@ package organization
 import (
 	"context"
 
-	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/google/uuid"
 	"github.com/luponetn/enx/internal/db"
 )
 
@@ -14,9 +14,9 @@ type Service struct {
 type Svc interface {
 	CreateOrganization(ctx context.Context, args db.CreateOrganizationParams) (db.CreateOrganizationRow, error)
 	UpdateOrganization(ctx context.Context, args db.UpdateOrganizationParams) (db.UpdateOrganizationRow, error)
-	DeleteOrganization(ctx context.Context, id pgtype.UUID) error
-	GetAllOrganizationsByUser(ctx context.Context, userID pgtype.UUID) ([]db.GetAllOrganizationsByUserRow, error)
-	GetAllUsersInOrganization(ctx context.Context, organizationID pgtype.UUID) ([]db.GetAllUsersInOrganizationRow, error)
+	DeleteOrganization(ctx context.Context, id uuid.UUID) error
+	GetAllOrganizationsByUser(ctx context.Context, userID uuid.UUID) ([]db.GetAllOrganizationsByUserRow, error)
+	GetAllUsersInOrganization(ctx context.Context, organizationID uuid.UUID) ([]db.GetAllUsersInOrganizationRow, error)
 	GetOrganizationByName(ctx context.Context, name string) (db.GetOrganizationByNameRow, error)
 }
 
@@ -36,15 +36,15 @@ func (s *Service) UpdateOrganization(ctx context.Context, args db.UpdateOrganiza
 	return s.queries.UpdateOrganization(ctx, args)
 }
 
-func (s *Service) DeleteOrganization(ctx context.Context, id pgtype.UUID) error {
+func (s *Service) DeleteOrganization(ctx context.Context, id uuid.UUID) error {
 	return s.queries.DeleteOrganization(ctx, id)
 }
 
-func (s *Service) GetAllOrganizationsByUser(ctx context.Context, userID pgtype.UUID) ([]db.GetAllOrganizationsByUserRow, error) {
+func (s *Service) GetAllOrganizationsByUser(ctx context.Context, userID uuid.UUID) ([]db.GetAllOrganizationsByUserRow, error) {
 	return s.queries.GetAllOrganizationsByUser(ctx, userID)
 }
 
-func (s *Service) GetAllUsersInOrganization(ctx context.Context, organizationID pgtype.UUID) ([]db.GetAllUsersInOrganizationRow, error) {
+func (s *Service) GetAllUsersInOrganization(ctx context.Context, organizationID uuid.UUID) ([]db.GetAllUsersInOrganizationRow, error) {
 	return s.queries.GetAllUsersInOrganization(ctx, organizationID)
 }
 

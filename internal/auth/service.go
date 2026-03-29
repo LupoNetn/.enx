@@ -5,7 +5,6 @@ import (
 	"errors"
 	"log/slog"
 
-	"github.com/google/uuid"
 	"github.com/luponetn/enx/internal/config"
 	"github.com/luponetn/enx/internal/db"
 	"github.com/luponetn/enx/internal/utils"
@@ -55,7 +54,7 @@ func (s *AuthService) Register(ctx context.Context, input RegisterInput) (*AuthR
 
 	return &AuthResponse{
 		User: UserResponse{
-			ID:    uuid.UUID(user.ID.Bytes),
+			ID:    user.ID,
 			Email: user.Email,
 			Name:  input.Name,
 		},
@@ -84,7 +83,7 @@ func (s *AuthService) Login(ctx context.Context, input LoginInput) (*AuthRespons
 
 	return &AuthResponse{
 		User: UserResponse{
-			ID:    uuid.UUID(user.ID.Bytes),
+			ID:    user.ID,
 			Email: user.Email,
 			Name:  user.Name,
 		},

@@ -1,10 +1,16 @@
 package env
 
+import "encoding/json"
+
 type CreateEnvRequest struct {
-	Name        string            `json:"name" binding:"required"`
-	ProjectID   string            `json:"project_id" binding:"required"`
-	Variables   map[string]string `json:"variables" binding:"required"`
-	Version     int               `json:"version" binding:"required"`
-	Description string            `json:"description" binding:"required"`
-	CreatedBy   string            `json:"created_by" binding:"required"`
+	Name        string          `json:"name"`
+	ProjectID   string          `json:"project_id"`
+	Variables   json.RawMessage `json:"variables"`
+	Description string          `json:"description"`
+}
+
+type UpdateEnvRequest struct {
+	Name        *string          `json:"name"`
+	Variables   *json.RawMessage `json:"variables"`
+	Description *string          `json:"description"`
 }
