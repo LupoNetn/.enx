@@ -27,8 +27,8 @@ func NewOrganizationHandler(service Svc) *Handler {
 func (h *Handler) CreateOrganization(w http.ResponseWriter, r *http.Request) {
   var req CreateOrganizationRequest
   if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-	slog.Error("could not properly pars request body,there are missing or invalid fields")
-	utils.WriteError(w,http.StatusBadRequest,"invalid body sent")
+	slog.Error("could not properly parse request body, there are missing or invalid fields")
+	utils.WriteError(w, http.StatusBadRequest, "invalid body sent")
 	return
   }
 
@@ -50,7 +50,7 @@ func (h *Handler) CreateOrganization(w http.ResponseWriter, r *http.Request) {
   }
 
   //create context for db operations
-  ctx, cancel := context.WithTimeout(context.Background(), 10 * time.Second)
+  ctx, cancel := context.WithTimeout(r.Context(), 10 * time.Second)
   defer cancel()
 
   //check if organization name already exists
@@ -112,7 +112,7 @@ func (h *Handler) UpdateOrganization(w http.ResponseWriter, r *http.Request) {
 		params.Passkey = pgtype.Text{String: *passkeyHash, Valid: true}
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(r.Context(), 10*time.Second)
 	defer cancel()
 
 	organization, err := h.service.UpdateOrganization(ctx, params)
@@ -136,7 +136,7 @@ func (h *Handler) DeleteOrganization(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(r.Context(), 10*time.Second)
 	defer cancel()
 
 	err = h.service.DeleteOrganization(ctx, parsedUUID)
@@ -159,7 +159,7 @@ func (h *Handler) GetAllOrganizationsByUser(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(r.Context(), 10*time.Second)
 	defer cancel()
 
 	organizations, err := h.service.GetAllOrganizationsByUser(ctx, parsedUUID)
@@ -183,7 +183,7 @@ func (h *Handler) GetAllUsersInOrganization(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(r.Context(), 10*time.Second)
 	defer cancel()
 
 	users, err := h.service.GetAllUsersInOrganization(ctx, parsedUUID)
@@ -206,7 +206,7 @@ func (h *Handler) GetOrganizationByName(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(r.Context(), 10*time.Second)
 	defer cancel()
 
 	organization, err := h.service.GetOrganizationByName(ctx, name)

@@ -42,7 +42,7 @@ func (h *Handler) CreateEnv(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Double check if name exists in project
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(r.Context(), 10*time.Second)
 	defer cancel()
 
 	_, err = h.service.GetEnvByNameInProject(ctx, db.GetEnvByNameInProjectParams{
@@ -83,7 +83,7 @@ func (h *Handler) GetEnvsByProject(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(r.Context(), 10*time.Second)
 	defer cancel()
 
 	envs, err := h.service.GetEnvsByProject(ctx, parsedUUID)
@@ -107,7 +107,7 @@ func (h *Handler) GetEnvByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(r.Context(), 10*time.Second)
 	defer cancel()
 
 	env, err := h.service.GetEnvByID(ctx, parsedUUID)
@@ -150,7 +150,7 @@ func (h *Handler) UpdateEnv(w http.ResponseWriter, r *http.Request) {
 		params.Variables = []byte(*req.Variables)
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(r.Context(), 10*time.Second)
 	defer cancel()
 
 	env, err := h.service.UpdateEnv(ctx, params)
@@ -174,7 +174,7 @@ func (h *Handler) DeleteEnv(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(r.Context(), 10*time.Second)
 	defer cancel()
 
 	err = h.service.DeleteEnv(ctx, parsedUUID)
