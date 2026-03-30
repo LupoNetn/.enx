@@ -188,3 +188,36 @@ func (h *Handler) DeleteEnv(w http.ResponseWriter, r *http.Request) {
 		"message": "successfully deleted environment",
 	})
 }
+func (h *Handler) GetEnvByName(w http.ResponseWriter, r *http.Request) {
+	projectID := r.URL.Query().Get("project_id")
+	name := r.PathValue("name")
+
+	if projectID == "" || name == "" {
+		utils.WriteError(w, http.StatusBadRequest, "project_id and name are required")
+		return
+	}
+
+	parsedUUID, err := utils.StringToUUID(projectID)
+	if err != nil {
+		utils.WriteError(w, http.StatusBadRequest, "invalid project id")
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(r.Context(), 10*time.Second)
+	defer cancel()
+
+	env, err := h.service.GetEnvByNameInProject(ctx, db.GetEnvByNameInProjectParams{
+		ProjectID: parsedUUID,
+		Name:      name,
+	})
+	if err != nil {
+		slog.Error("Could not fetch environment", "err", err)
+		utils.WriteError(w, http.StatusNotFound, "environment not found")
+		return
+	}
+
+	utils.WriteJSON(w, http.StatusOK, map[string]any{
+		"message": "successfully fetched environment",
+		"data":    env,
+	})
+}
